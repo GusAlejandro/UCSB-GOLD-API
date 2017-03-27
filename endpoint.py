@@ -10,6 +10,7 @@ class GoldEndpoint(Resource):
     def get(self, quarter, subject):
         return {quarter:subject}
 
+
 api.add_resource(GoldEndpoint,'/goldapi/<quarter>/<subject>')
 
 if __name__ == '__main__':
