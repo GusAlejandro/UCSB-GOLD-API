@@ -1,5 +1,5 @@
 # UCSB-GOLD-API
-API to interface with GOLD
+API to interface with GOLD. Most likely it will feature 3 ways to acess it. Simple bare bones function calls, rest api, and a command line interface.
 
 
 ## Codes for Quarters and Course Subjects 
