@@ -6,9 +6,12 @@ from bs4 import BeautifulSoup
 
 class Scraper:
 
-    def __init__(self):
+    def __init__(self, quarter, subject, course=None):
+        self.quarter = quarter
+        self.subject = subject
+        self.course = course
         self.browser = webdriver.Chrome()
-        self.payload = {}
+        self.payload = {subject : []}
 
     def get_webpage(self,url):
         self.browser.get(url)
@@ -23,33 +26,33 @@ class Scraper:
         self.browser.find_element_by_name('ctl00$pageContent$loginButton').click()
 
 
-
     def parse_course_listings(self, raw_html):
-        # TODO: Efficiently parse each class and implement Json packaging for return
+        current = ''
         soup = BeautifulSoup(raw_html, 'html.parser')
-        a = soup.find_all("span",class_='tableheader')
-        for x in a:
-            x = str(x.text)
-            print(x.split())
+        courseList = soup.find_all("span",class_='tableheader')
+        for course in courseList:
+            course = str(course.text)
+            for word in course.split():
+                current += ' ' + word
+            self.payload[self.subject].append(current)
+            current = ''
 
 
-    def get_course_listings(self, quarter, subject):
+    def get_course_listings(self):
+        # TODO: package response as JSON
         self.login()
         self.get_webpage('https://my.sa.ucsb.edu/gold/BasicFindCourses.aspx')
         quarterField = Select(self.browser.find_element_by_name('ctl00$pageContent$quarterDropDown'))
-        quarterField.select_by_value(quarter)
+        quarterField.select_by_value(self.quarter)
         subjectField = Select(self.browser.find_element_by_name('ctl00$pageContent$subjectAreaDropDown'))
-        subjectField.select_by_value(subject)
+        subjectField.select_by_value(self.subject)
         self.browser.find_element_by_name('ctl00$pageContent$searchButton').click()
         text = self.browser.page_source
         self.browser.quit()
         self.parse_course_listings(text)
         self.browser.quit()
-
+        return self.payload
 
 
     def get_course_information(self, course):
         pass
-
-it = Scraper()
-it.get_course_listings('20171', 'EARTH')
