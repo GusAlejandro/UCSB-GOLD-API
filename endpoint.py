@@ -4,7 +4,6 @@ from scraper import Scraper
 
 app = Flask(__name__)
 api = Api(app)
-# TODO: Implement dictionary to convert custom quarter/subject codes to actual ones
 
 
 class GoldEndpoint(Resource):

@@ -1,19 +1,21 @@
-from settings import authentication
+from settings import *
 from selenium import webdriver
 from selenium.webdriver.support.ui import Select
 from bs4 import BeautifulSoup
 
 
+
 class Scraper:
 
     def __init__(self, quarter, subject, course=None):
-        self.quarter = quarter
-        self.subject = subject
+        self.raw_subject = subject
+        self.quarter = codes_for_quarters[quarter]
+        self.subject = codes_for_subject[subject]
         self.course = course
         self.browser = webdriver.Chrome()
-        self.payload = {subject : []}
+        self.payload = {self.raw_subject: []}
 
-    def get_webpage(self,url):
+    def get_webpage(self, url):
         self.browser.get(url)
 
     def login(self):
@@ -34,7 +36,7 @@ class Scraper:
             course = str(course.text)
             for word in course.split():
                 current += ' ' + word
-            self.payload[self.subject].append(current)
+            self.payload[self.raw_subject].append(current)
             current = ''
 
 
