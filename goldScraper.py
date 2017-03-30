@@ -58,3 +58,14 @@ class Scraper:
 
     def get_course_information(self, course):
         pass
+
+
+# functions below will be for the API available
+
+def get_courses(quarter, subject):
+    gold = Scraper(quarter, subject)
+    response = gold.get_course_listings()
+    return response
+
+def get_course_info(quarter, subject, course):
+    pass

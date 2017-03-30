@@ -1,5 +1,17 @@
 # UCSB-GOLD-API
-API to interface with GOLD. Most likely it will feature 3 ways to acess it. Simple bare bones function calls, rest api, and a command line interface.
+API to interface with GOLD. Can either setup REST endpoint w/Flask or simply use API.
+
+## API
+
+### REST Endpoint
+Simply run endpoint.py, and curl. Example:
+curl http://127.0.0.1:5000/goldapi//quarter/subject
+
+This will return the list of courses given a particular quarter.
+
+### API calls
+### get_courses(quarter,subject)
+Returns list of courses given a particular quarter
 
 
 ## Codes for Quarters and Course Subjects 
