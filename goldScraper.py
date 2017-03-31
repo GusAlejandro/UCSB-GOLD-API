@@ -56,7 +56,7 @@ class Scraper:
         return self.payload
 
 
-    def get_course_information(self, course):
+    def get_course_information(self):
         pass
 
 
@@ -67,5 +67,8 @@ def get_courses(quarter, subject):
     response = gold.get_course_listings()
     return response
 
+
 def get_course_info(quarter, subject, course):
-    pass
+    gold = Scraper(quarter,subject,course)
+    response = gold.get_course_information()
+    return response
