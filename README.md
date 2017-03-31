@@ -24,8 +24,8 @@ Returns list of courses given a particular quarter
 ## Codes for Quarters and Course Subjects 
 
 ### Quarters
-* Summer 2017 -> '20173'
-* Spring 2017 -> '20172'
+* Summer 2017 -> 'SUMMER2017'
+* Spring 2017 -> 'SPRING2017'
 * Winter 2017 -> 'WINTER2017'
 * Fall 2016 -> 'FALL2016'
 * Spring 2016 -> 'SPRING2016'

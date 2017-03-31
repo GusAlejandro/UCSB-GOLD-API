@@ -6,6 +6,8 @@ authentication = {
 }
 
 codes_for_quarters = {
+    'SUMMER2017': '20173',
+    'SPRING2017': '20172',
     'WINTER2017': '20171',
     'FALL2016': '20164',
     'SPRING2016': '20162',
