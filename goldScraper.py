@@ -72,8 +72,6 @@ class Scraper:
         tagForCourseInfo = "pageContent_CourseList_PrimarySections_"
         print("THERE ARE THIS MANY COURSES: " + str(len(allCourses)))
         for course in allCourses:
-            #print(course)
-            print(count)
             tag = tagForCourseInfo+str(count)
             courseInfo = str(course)
             courseInfo = BeautifulSoup(courseInfo, "html.parser")
@@ -82,13 +80,38 @@ class Scraper:
             courseInfo = str(courseInfo)
             courseInfo = BeautifulSoup(courseInfo, "html.parser")
             courseInfo = courseInfo.find_all("table", width="585")
+            currentTag = "pageContent_CourseList_PrimarySections_" + str(count)
             # TODO: bfore goin into loop, throw all the ones with a different immediate parent
-            # for each in courseInfo:
-            #     print(each)
-            #     print("THE CURRENT COUNT IS: " +str(count))
+            print("there are THIS MANY COURSES in this: "+ str(len(courseInfo)))
+            for each in courseInfo:
+                topLevel = each.parent
+                topLevel = topLevel.parent
+                topLevel = topLevel.parent
+                topLevel = topLevel.parent
+                # print(topLevel['id'])
+                if(topLevel['id'] == currentTag):
+                    print(topLevel['id'])
+                    lo = str(each.contents[1])
+                    lo = BeautifulSoup(lo, "html.parser")
+                    lo = lo.find_all("td")
+                    for item in lo:
+                        if item.text != "" or item.text!=None:
+                            print(item.text)
+
+
+
+                    # theKids = theKids.find_all("td")
+                    # for one in theKids:
+                    #     print(one.text)
+                    # for child in each.children:
+                    #     print("CHILD HERE")
+                    #     print(child)
+                    # if in here you are in a class, not a section. to be noted, in phys labs each one is a class (lecture)
+
+
             count += 1
-        #print(courseInfo)
-        print("this is the lenght " + str(len(courseInfo)))
+        print(count)
+
 
 
     def get_course_information(self):
