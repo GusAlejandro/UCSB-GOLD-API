@@ -15,7 +15,7 @@ class GoldEndpoint(Resource):
 # this endpoint is not operational atm
 class MoreGold(Resource):
     def get(self, quarter, subject, course):
-        response = goldScraper.get_course_info(quarter,subject,course)
+        response = goldScraper.get_all_info_for_courses(quarter, subject, course)
         return response
 
 api.add_resource(GoldEndpoint,'/goldapi/<quarter>/<subject>')

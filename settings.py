@@ -1,8 +1,8 @@
 # Refactor Payload section, will now contain much more information
 
 authentication = {
-    'username':'xxxx',
-    'password':'xxxx'
+    'username':'xxxxx',
+    'password':'xxxxx'
 }
 
 codes_for_quarters = {

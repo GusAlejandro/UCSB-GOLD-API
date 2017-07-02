@@ -4,29 +4,36 @@ from selenium.webdriver.support.ui import Select
 from bs4 import BeautifulSoup
 
 
-## TODO: PREVIOUSLY THOUGHT OF METHOD OF TABLE WIDTH 585 does not work, deeper layers have it. look into parent tag beautiful soup
-
 class Scraper:
 
     def __init__(self, quarter, subject):
+        """
+        :param quarter: user requested quarter 
+        :param subject: user requested subject
+        :var raw_subject: Raw input, API defined, name for the subject 
+        :var quarter: Actual string used for quarter in UCSB GOLD
+        :var subject: Actual string used for quarter in UCSB GOLD
+        :var label: label used for response purposes
+        :var browser: browser instance we use for scraping
+        :var raw_html: each scraper call goes to the course search page, inputs quarter and subject, returns the HTML of that page for parsing
+        """
         self.raw_subject = subject
         self.quarter = codes_for_quarters[quarter]
         self.subject = codes_for_subject[subject]
         self.label = self.raw_subject + " " + quarter
         self.browser = webdriver.Chrome()
-        self.payload = None
-        self.fullLoad = {self.raw_subject: []}
         self.raw_html = self.get_subject_raw_html()
 
     def get_webpage(self, url):
+        # requests a url with the browser object
         self.browser.get(url)
 
     def login(self):
         # TODO: Implement try and catch to return error message in case of invalid login credentials
         self.get_webpage('https://my.sa.ucsb.edu/gold/Login.aspx')
-        user = self.browser.find_element_by_name('ctl00$pageContent$userNameText')
+        username = self.browser.find_element_by_name('ctl00$pageContent$userNameText')
         password = self.browser.find_element_by_name('ctl00$pageContent$passwordText')
-        user.send_keys(authentication['username'])
+        username.send_keys(authentication['username'])
         password.send_keys(authentication['password'])
         self.browser.find_element_by_name('ctl00$pageContent$loginButton').click()
 
@@ -34,38 +41,32 @@ class Scraper:
         # returns raw html for specified subject and quarter
         self.login()
         self.get_webpage('https://my.sa.ucsb.edu/gold/BasicFindCourses.aspx')
-        quarterField = Select(self.browser.find_element_by_name('ctl00$pageContent$quarterDropDown'))
-        quarterField.select_by_value(self.quarter)
-        subjectField = Select(self.browser.find_element_by_name('ctl00$pageContent$subjectAreaDropDown'))
-        subjectField.select_by_value(self.subject)
+        quarter_field = Select(self.browser.find_element_by_name('ctl00$pageContent$quarterDropDown'))
+        quarter_field.select_by_value(self.quarter)
+        subject_field = Select(self.browser.find_element_by_name('ctl00$pageContent$subjectAreaDropDown'))
+        subject_field.select_by_value(self.subject)
         self.browser.find_element_by_name('ctl00$pageContent$searchButton').click()
-        text = self.browser.page_source
+        raw_html = self.browser.page_source
         self.browser.quit()
-        return text
+        return raw_html
 
 
-    def parse_course_listings_for_title(self, raw_html):
-        # takes in raw_html returns dictionary of course titles
-        payload = {self.label: []}
-        current = ''
-        soup = BeautifulSoup(raw_html, 'html.parser')
-        courseList = soup.find_all("span",class_='tableheader')
-        for course in courseList:
+    def parse_course_listings_for_title_only(self):
+        # takes in raw_html from request and returns dictionary of course titles
+        course_listings = {self.label: []}
+        current_course_title = ''
+        soup = BeautifulSoup(self.raw_html, 'html.parser')
+        all_courses = soup.find_all("span",class_='tableheader')
+        for course in all_courses:
             course = str(course.text)
             for word in course.split():
-                current += ' ' + word
-            payload[self.label].append(current)
-            current = ''
-        return payload
-
-    def get_course_listings(self):
-        # this is an function api call that returns a structured payload of course titles based on quarter and subject
-        # TODO: package response as JSON
-        self.payload = self.parse_course_listings_for_title(self.raw_html)
-        return self.payload
+                current_course_title += ' ' + word
+            course_listings[self.label].append(current_course_title)
+            current_course_title = ''
+        return course_listings
 
     def parse_course_listings_for_lectures(self, raw_html):
-        # TODO: currently getting number of courses instead of number of lectures, not specified in
+        # TODO: RESTRUCTURE ALL CODE
         soup = BeautifulSoup(raw_html, 'html.parser')
         allCourses =soup.find_all("table", class_="datatable")
         count = 0
@@ -81,36 +82,30 @@ class Scraper:
             courseInfo = BeautifulSoup(courseInfo, "html.parser")
             courseInfo = courseInfo.find_all("table", width="585")
             currentTag = "pageContent_CourseList_PrimarySections_" + str(count)
-            # TODO: bfore goin into loop, throw all the ones with a different immediate parent
             print("there are THIS MANY COURSES in this: "+ str(len(courseInfo)))
             for each in courseInfo:
-                topLevel = each.parent
-                topLevel = topLevel.parent
-                topLevel = topLevel.parent
-                topLevel = topLevel.parent
-                # print(topLevel['id'])
-                if(topLevel['id'] == currentTag):
-                    print(topLevel['id'])
-                    lo = str(each.contents[1])
-                    lo = BeautifulSoup(lo, "html.parser")
-                    lo = lo.find_all("td")
-                    for item in lo:
-                        if item.text != "" or item.text!=None:
-                            print(item.text)
-
-
-
-                    # theKids = theKids.find_all("td")
-                    # for one in theKids:
-                    #     print(one.text)
-                    # for child in each.children:
-                    #     print("CHILD HERE")
-                    #     print(child)
-                    # if in here you are in a class, not a section. to be noted, in phys labs each one is a class (lecture)
-
+                print(each)
+                print("======================================")
+                # topLevel = each.parent
+                # topLevel = topLevel.parent
+                # topLevel = topLevel.parent
+                # topLevel = topLevel.parent
+                # # print(topLevel['id'])
+                # if(topLevel['id'] == currentTag):
+                #     print(topLevel['id'])
+                #     lo = str(each.contents[1])
+                #     # lo = BeautifulSoup(lo, "html.parser")
+                #     # lo = lo.find_all("td")
+                #
 
             count += 1
         print(count)
+
+
+    def get_course_listings(self):
+        # TODO: package response as JSON before returning [CURRENTLY USING DICT IN RESPONSE, MAY NEED TO CHANGE TO GET JSON FORMAT]
+        payload = self.parse_course_listings_for_title_only()
+        return payload
 
 
 
@@ -161,14 +156,14 @@ class Scraper:
 
 # functions below will be for the API available
 
-def get_courses(quarter, subject):
-    # this is the one that only does courses
+def get_course_titles_for(quarter, subject):
+    # API call that returns all courses available for a particular subject in a given quarter
     gold = Scraper(quarter, subject)
-    response = gold.get_course_listings()
-    return response
+    course_listings = gold.get_course_listings()
+    return course_listings
 
 
-def get_course_info(quarter, subject):
+def get_all_info_for_courses(quarter, subject):
     gold = Scraper(quarter,subject)
     response = gold.get_course_information()
     return response

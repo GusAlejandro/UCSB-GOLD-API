@@ -17,7 +17,7 @@ curl http://127.0.0.1:5000/goldapi//quarter/subject
 This will return the list of courses given a particular quarter.
 
 ### API calls
-### get_courses(quarter,subject)
+### get_course_titles_for(quarter,subject)
 Returns list of courses given a particular quarter
 
 
