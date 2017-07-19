@@ -1,4 +1,4 @@
 import goldScraper
 import sys
 
-print(goldScraper.get_course_titles_for(sys.argv[1],sys.argv[2]))
+goldScraper.get_all_info_for_courses_in(sys.argv[1],sys.argv[2])

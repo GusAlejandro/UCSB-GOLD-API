@@ -66,40 +66,66 @@ class Scraper:
         return course_listings
 
     def parse_course_listings_for_lectures(self, raw_html):
-        # TODO: RESTRUCTURE ALL CODE
+        response = {}
+        cur_course = None
+        last_course = None
+        lec_num = 1
+        sec_num = 1
+        # TODO: Make sure we hit all titles followed by associated tables of lectures and assorted info
         soup = BeautifulSoup(raw_html, 'html.parser')
-        allCourses =soup.find_all("table", class_="datatable")
-        count = 0
-        tagForCourseInfo = "pageContent_CourseList_PrimarySections_"
-        print("THERE ARE THIS MANY COURSES: " + str(len(allCourses)))
-        for course in allCourses:
-            tag = tagForCourseInfo+str(count)
-            courseInfo = str(course)
-            courseInfo = BeautifulSoup(courseInfo, "html.parser")
-            courseInfo = courseInfo.find("table", id=tag)
-            # # at this point we have a specific course, now we can do this again and count the numebr of table with=585 it has = # of lectures
-            courseInfo = str(courseInfo)
-            courseInfo = BeautifulSoup(courseInfo, "html.parser")
-            courseInfo = courseInfo.find_all("table", width="585")
-            currentTag = "pageContent_CourseList_PrimarySections_" + str(count)
-            print("there are THIS MANY COURSES in this: "+ str(len(courseInfo)))
-            for each in courseInfo:
-                print(each)
-                print("======================================")
-                # topLevel = each.parent
-                # topLevel = topLevel.parent
-                # topLevel = topLevel.parent
-                # topLevel = topLevel.parent
-                # # print(topLevel['id'])
-                # if(topLevel['id'] == currentTag):
-                #     print(topLevel['id'])
-                #     lo = str(each.contents[1])
-                #     # lo = BeautifulSoup(lo, "html.parser")
-                #     # lo = lo.find_all("td")
-                #
+        found = soup.find_all("table",width="585", align="left",cellpadding="0",border="0",cellspacing="0")
+        for each in found:
+            # this first part is to parse out course titles
+            each = str(each)
+            soup2 = BeautifulSoup(each,'html.parser')
+            course_titles = soup2.find_all("span",class_="tableheader")
+            if len(str(course_titles))>0:
+                for course in course_titles:
+                    lec_num = 1
+                    # logic to collect course title, take from the other function
+                    cur_course = course.text
+                    cur_course = str(cur_course).replace(u'\xa0', u' ')
+                    cur_course = cur_course.strip()
+                    cur_course = " ".join(cur_course.split())
+                    response[cur_course] = {"dummy" : "test"}
+                    # print(course.text)
+                    continue
+            # next part is to check if its a lecture slot
+            lectures = soup2.find_all("td",class_="clcellprimary",style="padding-right:3px;")
+            if len(str(lectures))>0:
+                count = True
+                for lecture in lectures:
+                    if count:
+                        sec_num = 1
+                        data = {}
+                        #print(str(lecture))
+                        parent_tag = lecture.parent
+                        values = str(parent_tag.text).replace(u'\xa0', u' ')
+                        values = values.split('\n')
+                        data['days'] = str(values[2]).strip()
+                        data['time'] = values[3]
+                        temp = str(values[4]).strip()
+                        data['instructor'] = " ".join(temp.split())
+                        count = False
+                        # print(data)
+                        response[cur_course][lec_num] = data
+                        # at this point data for a lecture is set
+                        lec_num +=1
+                        continue
+            # here goes logic to check and see if we have a section block
 
-            count += 1
-        print(count)
+
+
+
+
+
+
+            # print("===============================================================================")
+
+        print(response)
+
+
+
 
 
     def get_course_listings(self):
@@ -111,7 +137,6 @@ class Scraper:
 
     def get_course_information(self):
         # this is an function api call
-        courseTitles = self.parse_course_listings_for_title(self.raw_html)
         # print(courseTitles)
         self.parse_course_listings_for_lectures(self.raw_html)
         # # TODO: seperate going to course page as its own function
@@ -163,7 +188,7 @@ def get_course_titles_for(quarter, subject):
     return course_listings
 
 
-def get_all_info_for_courses(quarter, subject):
+def get_all_info_for_courses_in(quarter, subject):
     gold = Scraper(quarter,subject)
     response = gold.get_course_information()
     return response
