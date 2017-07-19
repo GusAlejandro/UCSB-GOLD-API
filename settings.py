@@ -1,8 +1,8 @@
 # Refactor Payload section, will now contain much more information
 
 authentication = {
-    'username':'xxxxx',
-    'password':'xxxx'
+    'username':'xx',
+    'password':'xx'
 }
 
 codes_for_quarters = {
@@ -102,10 +102,10 @@ codes_for_subject = {
     'WL': 'W&L  '
 }
 
-config = {
-  "apiKey": "xxxx",
-  "authDomain": "xxxx",
-  "databaseURL": "xxxxx",
-  "storageBucket": "xxxx"
-}
 
+config = {
+  "apiKey": "xx",
+  "authDomain": "xx",
+  "databaseURL": "xx",
+  "storageBucket": "xx"
+}
