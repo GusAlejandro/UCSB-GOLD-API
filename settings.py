@@ -2,7 +2,7 @@
 
 authentication = {
     'username':'xxxxx',
-    'password':'xxxxx'
+    'password':'xxxx'
 }
 
 codes_for_quarters = {
@@ -101,3 +101,11 @@ codes_for_subject = {
     'WRIT': 'WRIT ',
     'WL': 'W&L  '
 }
+
+config = {
+  "apiKey": "xxxx",
+  "authDomain": "xxxx",
+  "databaseURL": "xxxxx",
+  "storageBucket": "xxxx"
+}
+

@@ -69,6 +69,7 @@ class Scraper:
         response = {}
         cur_course = None
         last_course = None
+        course_num = 1
         lec_num = 1
         sec_num = 1
         # TODO: Make sure we hit all titles followed by associated tables of lectures and assorted info
@@ -86,9 +87,10 @@ class Scraper:
                     cur_course = course.text
                     cur_course = str(cur_course).replace(u'\xa0', u' ')
                     cur_course = cur_course.strip()
-                    cur_course = " ".join(cur_course.split())
-                    response[cur_course] = {"dummy" : "test"}
+                    cur_course = " ".join(cur_course.split()).replace('.','').replace('/','')
+                    response[cur_course] = {"course_num" : course_num}
                     # print(course.text)
+                    course_num+=1
                     continue
             # next part is to check if its a lecture slot
             lectures = soup2.find_all("td",class_="clcellprimary",style="padding-right:3px;")
@@ -102,9 +104,10 @@ class Scraper:
                         parent_tag = lecture.parent
                         values = str(parent_tag.text).replace(u'\xa0', u' ')
                         values = values.split('\n')
-                        data['days'] = str(values[2]).strip()
-                        data['time'] = values[3]
-                        temp = str(values[4]).strip()
+                        temp = str(values[2]).strip().replace('.','')
+                        data['days'] = temp #str(values[2]).strip()
+                        data['time'] = values[3].replace('.','')
+                        temp = str(values[4]).strip().replace('.','')
                         data['instructor'] = " ".join(temp.split())
                         count = False
                         # print(data)
@@ -122,7 +125,7 @@ class Scraper:
 
             # print("===============================================================================")
 
-        print(response)
+        return response
 
 
 
@@ -138,7 +141,6 @@ class Scraper:
     def get_course_information(self):
         # this is an function api call
         # print(courseTitles)
-        self.parse_course_listings_for_lectures(self.raw_html)
         # # TODO: seperate going to course page as its own function
         # self.login()
         # self.get_webpage('https://my.sa.ucsb.edu/gold/BasicFindCourses.aspx')
@@ -171,6 +173,8 @@ class Scraper:
         #         print(current)
         #
         #         current = ''
+
+        return self.parse_course_listings_for_lectures(self.raw_html)
 
 
 
