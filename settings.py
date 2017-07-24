@@ -104,9 +104,10 @@ codes_for_subject = {
 
 
 config = {
-  "apiKey": "xxxx",
-  "authDomain": "xxxxx",
-  "databaseURL": "xxxxx",
-  "storageBucket": "xxxxx"
+  "apiKey": "xxx",
+  "authDomain": "xxxx",
+  "databaseURL": "xxxx",
+  "storageBucket": "xxxx"
 }
+
 
