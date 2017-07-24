@@ -91,17 +91,17 @@ class Scraper:
                     response[cur_course] = {"course_num" : course_num}
                     # print(course.text)
                     course_num+=1
-                    continue
             # next part is to check if its a lecture slot
             lectures = soup2.find_all("td",class_="clcellprimary",style="padding-right:3px;")
             if len(str(lectures))>0:
                 count = True
                 for lecture in lectures:
+
                     if count:
                         sec_num = 1
                         data = {}
-                        #print(str(lecture))
                         parent_tag = lecture.parent
+                        # print(parent_tag)
                         values = str(parent_tag.text).replace(u'\xa0', u' ')
                         values = values.split('\n')
                         temp = str(values[2]).strip().replace('.','')
@@ -114,8 +114,22 @@ class Scraper:
                         response[cur_course][lec_num] = data
                         # at this point data for a lecture is set
                         lec_num +=1
-                        continue
             # here goes logic to check and see if we have a section block
+            sections = soup2.find_all("table",align="left", border="0", cellpadding="0", cellspacing="0", width="585")
+            section_bound = True
+            for x in sections:
+                section_content = x.parent
+                if "course info" not in section_content.text and "final" not in section_content.text and str(section_content.name) == "[document]":
+                    # at this point we have only sections
+                    # print(x.text)
+                    if section_bound:
+                        section_data = {}
+                        # just need to collect section data
+
+                        section_bound = False
+                        sec_num+=1
+
+
 
 
 
@@ -132,48 +146,11 @@ class Scraper:
 
 
     def get_course_listings(self):
-        # TODO: package response as JSON before returning [CURRENTLY USING DICT IN RESPONSE, MAY NEED TO CHANGE TO GET JSON FORMAT]
-        payload = self.parse_course_listings_for_title_only()
-        return payload
+        return self.parse_course_listings_for_title_only()
 
 
 
     def get_course_information(self):
-        # this is an function api call
-        # print(courseTitles)
-        # # TODO: seperate going to course page as its own function
-        # self.login()
-        # self.get_webpage('https://my.sa.ucsb.edu/gold/BasicFindCourses.aspx')
-        # quarterField = Select(self.browser.find_element_by_name('ctl00$pageContent$quarterDropDown'))
-        # quarterField.select_by_value(self.quarter)
-        # subjectField = Select(self.browser.find_element_by_name('ctl00$pageContent$subjectAreaDropDown'))
-        # subjectField.select_by_value(self.subject)
-        # self.browser.find_element_by_name('ctl00$pageContent$searchButton').click()
-        # text = self.browser.page_source
-        # self.browser.quit()
-        # soup = BeautifulSoup(text, 'html.parser')
-        # mainCourseList = soup.find_all("table",id="pageContent_CourseList") # captures the body of all courses
-        # mainCourseList = str(mainCourseList)
-        # mainCourseList = BeautifulSoup(mainCourseList, 'html.parser')
-        # courseBlocks = mainCourseList.find_all("table", class_="datatable")
-        # count = 0
-        # tagForCourseInfo = "pageContent_CourseList_PrimarySections_"
-        # current=''
-        # for course in courseBlocks:
-        #     # this gets each course block, now we need to get each ttile + lecture offering, within each course block
-        #     course = str(course)
-        #     courseSoup = BeautifulSoup(course, 'html.parser')
-        #     # this gets the course title
-        #     allCourseTitles = courseSoup.find_all("span",class_='tableheader')
-        #     for courseTitle in allCourseTitles:
-        #         courseTitle = str(courseTitle.text)
-        #         for word in courseTitle.split():
-        #             current += ' ' + word
-        #         # TODO: at this point we have the title so here we do another evenNewSoup.find_all(lectures in course")
-        #         print(current)
-        #
-        #         current = ''
-
         return self.parse_course_listings_for_lectures(self.raw_html)
 
 
