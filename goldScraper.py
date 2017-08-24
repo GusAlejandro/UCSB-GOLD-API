@@ -37,6 +37,31 @@ class Scraper:
         password.send_keys(authentication['password'])
         self.browser.find_element_by_name('ctl00$pageContent$loginButton').click()
 
+
+    def format_title(self, raw_title):
+        raw_title = str(raw_title.text)
+        formated_title = ''
+        for word in raw_title.split():
+            formated_title += ' ' + word
+        return formated_title
+
+
+    def parse_course_offering_data(self, raw_html):
+        values = str(raw_html.text).replace(u'\xa0', u' ').split('\n')
+        days = values[2].strip().replace('.', '')
+        time = values[3].replace('.', '')
+        instructor = values[4].strip().replace('.', '')
+        instructor = " ".join(instructor.split())
+        return days, time, instructor
+
+    def parse_section_offering_data(self, raw_html):
+        values = str(raw_html.text).replace(u'\xa0', u' ').split('\n')
+        days = values[3].strip().replace('.', '')
+        time = values[4].replace('.', '')
+        instructor = values[5].strip().replace('.', '')
+        instructor = " ".join(instructor.split())
+        return days, time, instructor
+
     def get_subject_raw_html(self):
         # returns raw html for specified subject and quarter
         self.login()
@@ -50,6 +75,20 @@ class Scraper:
         self.browser.quit()
         return raw_html
 
+    def create_offering_bundle(self, days, time, instructor):
+        data = {}
+        data["days"] = days
+        data["time"] = time
+        data["instructor"] = instructor
+        data["sections"] = {}
+        return data
+
+    def create_section_bundle(self, days, time, instructor):
+        data = {}
+        data["days"] = days
+        data["time"] = time
+        data["instructor"] = instructor
+        return data
 
     def parse_course_listings_for_title_only(self):
         # takes in raw_html from request and returns dictionary of course titles
@@ -65,85 +104,47 @@ class Scraper:
             current_course_title = ''
         return course_listings
 
+
+
+
+
+
     def parse_course_listings_for_lectures(self, raw_html):
         response = {}
-        cur_course = None
-        last_course = None
-        course_num = 1
-        lec_num = 1
-        sec_num = 1
-        # TODO: Make sure we hit all titles followed by associated tables of lectures and assorted info
         soup = BeautifulSoup(raw_html, 'html.parser')
-        found = soup.find_all("table",width="585", align="left",cellpadding="0",border="0",cellspacing="0")
-        for each in found:
-            # this first part is to parse out course titles
-            each = str(each)
-            soup2 = BeautifulSoup(each,'html.parser')
-            course_titles = soup2.find_all("span",class_="tableheader")
-            if len(str(course_titles))>0:
-                for course in course_titles:
-                    lec_num = 1
-                    # logic to collect course title, take from the other function
-                    cur_course = course.text
-                    cur_course = str(cur_course).replace(u'\xa0', u' ')
-                    cur_course = cur_course.strip()
-                    cur_course = " ".join(cur_course.split()).replace('.','').replace('/','')
-                    response[cur_course] = {"course_num" : course_num}
-                    # print(course.text)
-                    course_num+=1
-            # next part is to check if its a lecture slot
-            lectures = soup2.find_all("td",class_="clcellprimary",style="padding-right:3px;")
-            if len(str(lectures))>0:
-                count = True
-                for lecture in lectures:
+        courses = soup.find_all("table", class_="datatable", style="width:auto;")
 
-                    if count:
-                        sec_num = 1
-                        data = {}
-                        parent_tag = lecture.parent
-                        # print(parent_tag)
-                        values = str(parent_tag.text).replace(u'\xa0', u' ')
-                        values = values.split('\n')
-                        temp = str(values[2]).strip().replace('.','')
-                        data['days'] = temp #str(values[2]).strip()
-                        data['time'] = values[3].replace('.','')
-                        temp = str(values[4]).strip().replace('.','')
-                        data['instructor'] = " ".join(temp.split())
-                        count = False
-                        # print(data)
-                        response[cur_course][lec_num] = data
-                        # at this point data for a lecture is set
-                        lec_num +=1
-            # here goes logic to check and see if we have a section block
-            sections = soup2.find_all("table",align="left", border="0", cellpadding="0", cellspacing="0", width="585")
-            section_bound = True
-            for x in sections:
-                section_content = x.parent
-                if "course info" not in section_content.text and "final" not in section_content.text and str(section_content.name) == "[document]":
-                    # at this point we have only sections
-                    # print(x.text)
-                    if section_bound:
-                        section_data = {}
-                        # just need to collect section data
+        for course in courses:
+            course = str(course)
+            soup2 = BeautifulSoup(course,'html.parser')
+            title_html = soup2.find("div", class_="fl")
 
-                        section_bound = False
-                        sec_num+=1
+            course_title = self.format_title(title_html)
 
+            course_offering = soup2.find_all("table", width="585", cellpadding="0", cellspacing="0", align="left", border="0")
+            section_id = 0
+            offering_id = 0
+            offering_data = {}
+            # offering in this loop refers to either course or section as they are marked the same in the HTML
+            for offering in course_offering:
+                if "final" in offering.text:
+                    # collect information for course offering
+                    section_id = 0
+                    offering_id += 1
+                    offering = offering.contents[1] # closing in on actual relevant data
+                    days, time, instructor = self.parse_course_offering_data(offering)
+                    offering_data[offering_id] = self.create_offering_bundle(days, time, instructor)
+                elif "final" not in offering.text and "course info" not in offering.text:
+                    # collect information for a section offering
+                    section_data = {}
+                    section_id +=1
+                    offering = offering.contents[1] # closing in on actual relevant data
+                    days, time, instructor = self.parse_section_offering_data(offering)
+                    section_data = self.create_section_bundle(days,time,instructor)
+                    offering_data[offering_id]["sections"][section_id] = section_data
 
-
-
-
-
-
-
-
-            # print("===============================================================================")
-
+            response[course_title] = offering_data
         return response
-
-
-
-
 
     def get_course_listings(self):
         return self.parse_course_listings_for_title_only()
@@ -152,12 +153,6 @@ class Scraper:
 
     def get_course_information(self):
         return self.parse_course_listings_for_lectures(self.raw_html)
-
-
-
-
-
-
 
 
 # functions below will be for the API available
@@ -170,6 +165,7 @@ def get_course_titles_for(quarter, subject):
 
 
 def get_all_info_for_courses_in(quarter, subject):
+    # API call that returns all courses and associated offerings and sectiosn for the given subject and quarter
     gold = Scraper(quarter,subject)
     response = gold.get_course_information()
     return response

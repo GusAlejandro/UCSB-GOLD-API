@@ -1,3 +1,4 @@
+# NOT FUNCTIONAL AT THE MOMENT
 from flask import Flask
 from flask_restful import Resource,Api
 import goldScraper

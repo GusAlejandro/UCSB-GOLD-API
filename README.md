@@ -1,16 +1,16 @@
 # UCSB-GOLD-API
 API to interface with GOLD, the course registration system at UC Santa Barbara. Can either setup REST endpoint w/Flask or simply use API. In order to use it, write in your login credentials into settings.py. This is not an official API from UCSB, just a side project of mine.
 
-## Current Developments 
-* Retrieve all information pertaining to a course
-* Android course planner app that uses this API
-* MongoDB integration as alternative to Firebase
-* Functionality to interact with GOLD 
+## Current Developments
+* Mobile course planner app that uses this API
+* Functionality to interact with GOLD
+* Sample usage as REST API in flask
+* Actual REST API service to retrieve data as alternative to scraping GOLD via this API
 
 
 ## API
 
-### REST Endpoint
+### REST Endpoint (NOT OPERATIONAL)
 Simply run endpoint.py, and curl. Example:
 ```
 curl http://127.0.0.1:5000/goldapi/quarter/subject
@@ -20,10 +20,10 @@ This will return the list of courses given a particular quarter.
 
 ### API calls
 ### get_course_titles_for(quarter,subject)
-Returns list of courses given a particular quarter
+Returns list of courses given a particular quarter and subject
 
 ### get_all_info_for_courses_in(quarter, subject)
-Returns list of courses and its course offerings
+Returns list of courses and its course offerings, along with the sections for each course offering, given a quarter and a subject
 
 
 ## Codes for Quarters and Course Subjects 
