@@ -2,7 +2,7 @@ from settings import *
 from selenium import webdriver
 from selenium.webdriver.support.ui import Select
 from bs4 import BeautifulSoup
-
+import collections
 
 class Scraper:
 
@@ -110,7 +110,7 @@ class Scraper:
 
 
     def parse_course_listings_for_lectures(self, raw_html):
-        response = {}
+        response = collections.OrderedDict()
         soup = BeautifulSoup(raw_html, 'html.parser')
         courses = soup.find_all("table", class_="datatable", style="width:auto;")
 
